@@ -101,13 +101,7 @@ func main() {
 	// Start time tracking
 	startTime := time.Now()
 
-	err := findDifferences("test-set-1/input1.txt", "test-set-1/input2.txt", "test-set-1/only_in_file1.txt", "test-set-1/only_in_file2.txt")
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
-	}
-
-	err = findDifferences("test-set-2/input1.txt", "test-set-2/input2.txt", "test-set-2/only_in_file1.txt", "test-set-2/only_in_file2.txt")
+	err := findDifferences("large_input1.txt", "large_input2.txt", "only_in_file1.txt", "only_in_file2.txt")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
