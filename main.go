@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
 )
 
 func findDifferences(file1path, file2path, output1path, output2path string) error {
@@ -97,6 +98,9 @@ func findDifferences(file1path, file2path, output1path, output2path string) erro
 }
 
 func main() {
+	// Start time tracking
+	startTime := time.Now()
+
 	err := findDifferences("test-set-1/input1.txt", "test-set-1/input2.txt", "test-set-1/only_in_file1.txt", "test-set-1/only_in_file2.txt")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
@@ -109,5 +113,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Calculate execution time
+	duration := time.Since(startTime)
+
 	fmt.Println("Files processed successfully")
+	fmt.Printf("Execution time: %v\n", duration)
 }
