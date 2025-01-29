@@ -2,55 +2,101 @@ package main
 
 import (
 	"os"
+	"strings"
 	"testing"
 )
 
-func TestFindDifferences(t *testing.T) {
-	// Create test input files
-	input1Content := "apple\nbanana\ncherry\ndate\n"
-	input2Content := "banana\ndate\nfig\ngrape\n"
+func TestStringSet(t *testing.T) {
+	set := &StringSet{
+		data: make(map[string]bool),
+		keys: make([]string, 0),
+	}
 
-	err := os.WriteFile("test_input1.txt", []byte(input1Content), 0644)
+	// Test adding strings
+	testStrings := []string{"banana", "apple", "cherry"}
+	for _, s := range testStrings {
+		set.Add(s)
+	}
+
+	// Test size
+	if len(set.keys) != 3 {
+		t.Errorf("Expected 3 items, got %d", len(set.keys))
+	}
+
+	// Test duplicate handling
+	set.Add("apple")
+	if len(set.keys) != 3 {
+		t.Errorf("Duplicate added: expected 3 items, got %d", len(set.keys))
+	}
+
+	// Test sorting
+	set.Sort()
+	expected := []string{"apple", "banana", "cherry"}
+	for i, v := range expected {
+		if set.keys[i] != v {
+			t.Errorf("Expected %s at position %d, got %s", v, i, set.keys[i])
+		}
+	}
+}
+
+func TestFindDifferences(t *testing.T) {
+	// Create test files
+	input1 := []string{"apple", "banana", "cherry", "date"}
+	input2 := []string{"banana", "date", "fig", "grape"}
+
+	err := os.WriteFile("test_input1.txt", []byte(strings.Join(input1, "\n")+"\n"), 0644)
 	if err != nil {
-		t.Fatalf("Failed to create test input1: %v", err)
+		t.Fatal(err)
 	}
 	defer os.Remove("test_input1.txt")
 
-	err = os.WriteFile("test_input2.txt", []byte(input2Content), 0644)
+	err = os.WriteFile("test_input2.txt", []byte(strings.Join(input2, "\n")+"\n"), 0644)
 	if err != nil {
-		t.Fatalf("Failed to create test input2: %v", err)
+		t.Fatal(err)
 	}
 	defer os.Remove("test_input2.txt")
 
-	// Run the function
-	err = findDifferences("test_input1.txt", "test_input2.txt", "test_output1.txt", "test_output2.txt")
+	// Run function
+	_, err = findDifferences("test_input1.txt", "test_input2.txt",
+		"test_output1.txt", "test_output2.txt")
 	if err != nil {
-		t.Fatalf("findDifferences failed: %v", err)
+		t.Fatal(err)
 	}
 	defer os.Remove("test_output1.txt")
 	defer os.Remove("test_output2.txt")
 
-	// Read output files
+	// Verify results
 	output1, err := os.ReadFile("test_output1.txt")
 	if err != nil {
-		t.Fatalf("Failed to read output1: %v", err)
+		t.Fatal(err)
+	}
+	expected1 := []string{"apple", "cherry"}
+	got1 := strings.Split(strings.TrimSpace(string(output1)), "\n")
+
+	if !stringSliceEqual(got1, expected1) {
+		t.Errorf("Output1 mismatch:\nExpected: %v\nGot: %v", expected1, got1)
 	}
 
 	output2, err := os.ReadFile("test_output2.txt")
 	if err != nil {
-		t.Fatalf("Failed to read output2: %v", err)
+		t.Fatal(err)
 	}
+	expected2 := []string{"fig", "grape"}
+	got2 := strings.Split(strings.TrimSpace(string(output2)), "\n")
 
-	// Expected outputs
-	expectedOutput1 := "apple\ncherry\n"
-	expectedOutput2 := "fig\ngrape\n"
-
-	// Compare results
-	if string(output1) != expectedOutput1 {
-		t.Errorf("Output1 incorrect\nexpected: %q\ngot: %q", expectedOutput1, string(output1))
+	if !stringSliceEqual(got2, expected2) {
+		t.Errorf("Output2 mismatch:\nExpected: %v\nGot: %v", expected2, got2)
 	}
+}
 
-	if string(output2) != expectedOutput2 {
-		t.Errorf("Output2 incorrect\nexpected: %q\ngot: %q", expectedOutput2, string(output2))
+func stringSliceEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
 	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }
